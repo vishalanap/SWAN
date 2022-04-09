@@ -1,4 +1,4 @@
-mport React from 'react';
+import React from 'react';
 import './App.css';
 import Landing from './pages/landingPage';
 import Customer from './pages/customerLogin';
