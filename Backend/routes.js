@@ -85,6 +85,36 @@ router.post('/getuser', async(req,res) => {
     })  
 })
 
+
+// Get the user details from the user id
+router.post('/grievance', async(req,res) => {
+    const grievance_id = Math.floor(Math.random() * 1000000).toString()
+    const { grievanceText, user_id } = req.body
+    connection.query(`INSERT INTO grievance values("${grievance_id}","${user_id}","${grievanceText}");`, (e,op) => {
+        if(e){
+            console.log(e)
+            return res.status(400).json({msg : 'Error'})
+        }
+        else{
+            return res.status(200).json({msg : 'Success', data : op})
+        }
+    })  
+})
+
+// Get the grievance of users.
+
+router.get('/getgrievance', async(req,res) => {
+    connection.query('select * from grievance;', (e,op) =>{
+        if(e){
+            console.log(e)
+            return res.status(404).json({'msg' : 'Error'})
+        }
+        else{
+            return res.status(200).json({grievance : op})
+        }
+    })
+})
+
 // Book a trip from source to destination
 router.post('/booktrip', async(req,res) => {
     const {user_id, taxi_id, from_s, to_d, trip_id} = req.body
@@ -164,185 +194,3 @@ router.post('/getrequests', async(req,res) => {
         }
     })
 })
-
-
-// Approves the current trip request
-router.post('/approve', async(req,res) => {
-    const {trip_id, start, end,  duration, fare, user_id} = req.body
-    let from_s = ''
-    let to_d = ''
-    await connection.query(`INSERT INTO ongoing values("${trip_id}","${user_id}")`,  (e,o) => {
-        if(e){
-            console.log(e)
-        }
-    })
-    await connection.query(`SELECT from_s, to_d from trip3 WHERE trip_id="${trip_id}"`,async (e,op) => {
-        if(e){
-            console.log(e)
-            return res.status(400).json({'msg' : 'err'})
-        }
-        else{
-            from_s = op[0].from_s
-            to_d = op[0].to_d
-            await connection.query(`UPDATE trip2 SET duration="${duration}",fare=${fare} WHERE from_s="${from_s}" and to_d="${to_d}" and trip_id="${trip_id}";UPDATE trip4 SET status=TRUE WHERE trip_id="${trip_id}"`,[1,2], (e,op) => {
-                if(e){
-                    console.log(e)
-                    return res.status(400).json({'msg' : 'err'})
-                }
-                else{
-                    connection.query(`INSERT INTO trip1 values("${start}","${end}","${duration}","${trip_id}")`, (e,o) => {
-                        if(e){
-                            console.log(e)
-                            return res.status(400).json({'msg' : 'err'})
-                        }
-                        else{
-                            return res.status(200).json({'msg' : 'Accepted'})
-                        }
-                    })
-                }
-            })
-        }
-    })
-    
-})
-
-
-
-// Declines the current trip request
-router.post('/decline', async(req,res) => {
-    const {trip_id} = req.body
-    connection.query(`DELETE FROM trip3 where trip_id="${trip_id}"; DELETE FROM books where trip_id="${trip_id}"`,[1,2],(e,op) => {
-        if(e){
-            console.log(e)
-        }
-        res.status(200).json({msg : 'Done'})
-    })
-})
-
-// Checks the details of the last trip that was booked by the user
-router.post('/checkstatus', async(req,res) => {
-    const {user_id, trip_id} = req.body
-    console.log(user_id, trip_id)
-    connection.query(`SELECT * FROM ongoing where user_id="${user_id}"`, (e,op) => {
-        if(e) {
-            console.log(e)
-            return res.status(400).json({msg: 'Error'})
-        }
-        else{
-            if(op.length !== 0){
-                return res.status(200).json({'msg' : 'approved'})
-            }
-            else{
-                connection.query(`SELECT * FROM trip4 where trip_id="${trip_id}" and status=0`, (err,opt) => {
-                    if(err){
-                        console.log(err)
-                    }
-                    else if(opt.length !== 0){
-                            console.log('in')
-                            return res.status(200).json({'msg' : 'wait'})
-                    }
-                    else{
-                        return res.status(200).json({'msg' : 'declined'})
-                    }
-                })
-            }
-        }
-    })
-})
-
-
-//  Adding a new driver
-router.post('/addnew', async(req,res) => {
-    const {driver_id, taxi_id, d_name, d_phone_no, rating, number, color, model, cclass, capacity} = req.body
-    console.log(number)
-    const sql = `insert into taxi1 values("${taxi_id}","${color}","${number}", NULL,"${model}");
-            insert into taxi2 values("${taxi_id}","${model}");
-            insert into taxi3 values("${model}", ${capacity}, "${cclass}");
-            insert into driver1 values("${driver_id}","${d_name}","${d_phone_no}","${taxi_id}",${rating});
-            insert into driver2 values("${driver_id}","${d_phone_no}");
-            insert into driver3 values("${d_phone_no}","${d_name}");
-            UPDATE taxi1 SET driver_id="${driver_id}" where taxi_id="${taxi_id}";
-            insert into works values("${driver_id}","2");
-            insert into drives values("${driver_id}","${taxi_id}");
-            insert into present_at values("${driver_id}","410078");
-            insert into availability values("${taxi_id}","410078");`
-    connection.query(sql,[1,2,3,4,5,6,7,8,9,10,11], (e,op) => {
-        if(e){
-            console.log(e)
-            res.status(404).json({'msg' : 'Error'})
-        }
-        else{
-            return res.status(200).json({'msg' : 'Inserted'})
-        }
-    })
-})
-
-// Retrieve information about the garage
-
-router.get('/getgarage', async(req,res) => {
-    connection.query('select * from taxi1 t inner join garage g on t.taxi_id = g.taxi_id;', (e,op) =>{
-        if(e){
-            console.log(e)
-            return res.status(404).json({'msg' : 'Error'})
-        }
-        else{
-            return res.status(200).json({garage : op})
-        }
-    })
-})
-
-// Get details about a trip
-router.post('/curtrip', async(req,res) => {
-    const {trip_id } = req.body
-    connection.query(`SELECT * FROM trip2 where trip_id="${trip_id}"`, (e,op) => {
-        if(e){
-            console.log(e)
-            return res.status(400).json({'msg' : 'Error'})
-        }
-        else{
-            return res.status(200).json({ongoing : op})
-        }
-    })
-})
-
-// Give rating to the driver
-router.post('/setrating', async(req,res) => {
-    const {rating , trip_id} = req.body
-    let prevrating = 0
-    connection.query(`SELECT rating from trip4 where trip_id="${trip_id}"`,(err,op) => {
-        if(err){
-            return res.status(404)
-        }
-        else{
-            prevrating = op[0].rating
-        }
-    })
-    console.log(prevrating)
-    const r = Math.ceil((rating + prevrating) / 2)
-    connection.query(`UPDATE trip4 set rating="${r}" where trip_id="${trip_id}";DELETE from ongoing where trip_id="${trip_id}"`,[1,2], (e,op) => {
-        if(e){
-            console.log(e)
-            return res.status(400).json({'msg' : 'Error'})
-        }
-        return res.status(200).json({'msg' : 'Updated'})
-    })
-
-})
-
-// Get details about the ongoing trip
-router.post('/getongoing', async(req,res) => {
-    const {user_id} = req.body
-
-    connection.query(`SELECT trip_id from ongoing where user_id="${user_id}";`, (e,op) => {
-        if(e){
-            console.log(e)
-        }
-        else{
-            return res.status(200).json({ongoing : op})
-        }
-    })
-})
-
-
-
-module.exports = router
