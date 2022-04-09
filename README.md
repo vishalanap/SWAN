@@ -3,7 +3,7 @@
 <hr>
 
 #### Problem Statement:
-For various purposes people need to travel on the daily basis. And there are various mediums used for travelling. But getting the transportation medium at peoples’ convenience is a difficult thing to achieve. So, our problem statement is to build a web application for Taxi Management System which provide the easy platform for taxi booking.
+For various purposes people need to travel on the daily basis. And there are various mediums used for travelling. But getting the transportation medium at peoples convenience is a difficult thing to achieve. So, our problem statement is to build a web application for Taxi Management System which provide the easy platform for taxi booking.
 <hr>
 
 #### Objectives:
