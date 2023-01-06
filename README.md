@@ -31,4 +31,8 @@ Frameworks:
 ```
 <hr>
 
-![example](Docs/1.png)
+<p align="center">
+<a href=" ">
+    <img src="Docs/1.png" alt="example1"/>
+</a>
+</p>
